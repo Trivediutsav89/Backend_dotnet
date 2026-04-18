@@ -7,6 +7,7 @@ using Project.API.Helpers;
 using Project.Core.Common;
 using Project.Core.Entities.Business;
 using Project.Core.Entities.General;
+using Project.Core.Exceptions;
 using Project.Core.Interfaces.IServices;
 
 namespace Project.API.Controllers.V1
@@ -177,22 +178,21 @@ namespace Project.API.Controllers.V1
 
                 return Ok(response);
             }
+            catch (NotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new ResponseViewModel<ProductViewModel>
+                {
+                    Success = false,
+                    Message = "Product not found",
+                    Error = new ErrorViewModel
+                    {
+                        Code = "NOT_FOUND",
+                        Message = ex.Message
+                    }
+                });
+            }
             catch (Exception ex)
             {
-                if (ex.Message == "No data found")
-                {
-                    return StatusCode(StatusCodes.Status404NotFound, new ResponseViewModel<ProductViewModel>
-                    {
-                        Success = false,
-                        Message = "Product not found",
-                        Error = new ErrorViewModel
-                        {
-                            Code = "NOT_FOUND",
-                            Message = "Product not found"
-                        }
-                    });
-                }
-
                 _logger.LogError(ex, $"An error occurred while retrieving the product");
 
                 var errorResponse = new ResponseViewModel<ProductViewModel>
@@ -207,6 +207,53 @@ namespace Project.API.Controllers.V1
                 };
 
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
+
+        [HttpGet("{id}/price")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPrice(int id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var price = await _productService.PriceCheck(id, cancellationToken);
+
+                var response = new ResponseViewModel<double>
+                {
+                    Success = true,
+                    Message = "Product price retrieved successfully",
+                    Data = price
+                };
+
+                return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new ResponseViewModel<double>
+                {
+                    Success = false,
+                    Message = "Product not found",
+                    Error = new ErrorViewModel
+                    {
+                        Code = "NOT_FOUND",
+                        Message = ex.Message
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while retrieving the product price");
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseViewModel<double>
+                {
+                    Success = false,
+                    Message = "Error retrieving product price",
+                    Error = new ErrorViewModel
+                    {
+                        Code = "ERROR_CODE",
+                        Message = ex.Message
+                    }
+                });
             }
         }
 

@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Project.API.Extensions;
+using Project.API.Filters;
 using Project.API.Middlewares;
 using Project.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,10 @@ builder.Services
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ResponseMetadataActionFilter>();
+});
 
 // Swagger Settings
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
@@ -117,6 +121,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseGlobalExceptionHandling();
 app.UseStaticFiles();
 app.UseRouting(); // Add this line to configure routing
 
