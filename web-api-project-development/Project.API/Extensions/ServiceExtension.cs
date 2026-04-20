@@ -1,4 +1,4 @@
-﻿using Project.API.Middlewares;
+using Project.API.Middlewares;
 using Project.Core.Interfaces.IRepositories;
 using Project.Core.Interfaces.IServices;
 using Project.Core.Services;
@@ -13,6 +13,7 @@ namespace Project.API.Extensions
             #region Services
             services.AddSingleton<IUserContext, UserContext>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
